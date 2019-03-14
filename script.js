@@ -1,6 +1,11 @@
 const myWorker = new Worker('svgo-worker.js');
-
+const createElement = text=>{
+     const div = document.createElement('div');
+    div.innerHTML= text;
+    document.body.appendChild(div);
+}
 fetch('palm.svg').then(t=>t.text()).then(textContent=>{
+    createElement(textContent)
     const start = {action: 'load',data:textContent,id: 1};
     myWorker.postMessage(start);
 })
@@ -11,7 +16,7 @@ myWorker.onmessage = (a)=>{
         init = true;
         myWorker.postMessage({action: "process",id: 2,settings})
     }else{
-        
+        createElement( a.result);
     }
 }
 
