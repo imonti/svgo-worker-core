@@ -1,7 +1,7 @@
 const myWorker = new Worker('svgo-worker.js');
 const data =`<svg xmlns="http://www.w3.org/2000/svg" xmlns:spine="http://powtoon.com/" viewBox="0 0 23 98"></svg>`;
-const init = {action: 'load',data,id: 1};
-myWorker.postMessage(init);
+const start = {action: 'load',data,id: 1};
+myWorker.postMessage(start);
 let init = false;
 myWorker.onmessage = (a)=>{
     console.log('response',init,a.data)
