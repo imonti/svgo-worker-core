@@ -16,7 +16,7 @@ myWorker.onmessage = (a)=>{
         init = true;
         myWorker.postMessage({action: "process",id: 2,settings})
     }else{
-        createElement(a.result.data);
+        createElement(a.data.result.data);
     }
 }
 
