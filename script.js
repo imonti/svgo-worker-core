@@ -1,16 +1,10 @@
-const myWorker = new Worker('svgo-worker.js');
+let myWorker = null;
 const createElement = text=>{
      const div = document.createElement('div');
     div.innerHTML= text;
     document.body.appendChild(div);
 }
-fetch('palm.svg').then(t=>t.text()).then(textContent=>{
-    createElement(textContent)
-    const start = {action: 'load',data:textContent,id: 1};
-    myWorker.postMessage(start);
-})
-let init = false;
-myWorker.onmessage = (a)=>{
+const workerMessage = (a)=>{
     console.log('response',init,a.data)
     if(!init){
         init = true;
@@ -19,6 +13,17 @@ myWorker.onmessage = (a)=>{
         createElement(a.data.result.data);
     }
 }
+fetch('palm.svg').then(t=>t.text()).then(textContent=>{
+     console.time('worker');
+    myWorker =  new Worker('svgo-worker.js');
+     console.timeEnd('worker');
+    createElement(textContent);
+     myWorker.onmessage = workerMessage;
+    const start = {action: 'load',data:textContent,id: 1};
+    myWorker.postMessage(start);
+})
+let init = false;
+
 
 const settings = {
     "plugins":
