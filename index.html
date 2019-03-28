@@ -1,12 +1,195 @@
 <!DOCTYPE html>
 <html>
 
-  <head>
-    
-  </head>
+<head>
+    <link rel="shortcut icon" href="#">
+    <script src="./dist/SVGO.js"></script>
+</head>
 
-  <body>
-    <h1 id="header">Test</h1>
-    <script src="script.js"></script>
-  </body>
+<body>
+    <h1>Hello Plunker!</h1>
+</body>
+<script>
+let myWorker = null;
+const settings = {
+    "plugins": {
+        "removeDoctype": true,
+        "removeXMLProcInst": true,
+        "removeComments": true,
+        "removeMetadata": true,
+        "removeXMLNS": false,
+        "removeEditorsNSData": true,
+        "cleanupAttrs": true,
+        "inlineStyles": true,
+        "minifyStyles": true,
+        "convertStyleToAttrs": false,
+        "cleanupIDs": true,
+        "removeRasterImages": true,
+        "removeUselessDefs": true,
+        "cleanupNumericValues": true,
+        "cleanupListOfValues": true,
+        "convertColors": true,
+        "removeUnknownsAndDefaults": true,
+        "removeNonInheritableGroupAttrs": true,
+        "removeUselessStrokeAndFill": true,
+        "removeViewBox": true,
+        "cleanupEnableBackground": true,
+        "removeHiddenElems": true,
+        "removeEmptyText": true,
+        "convertShapeToPath": true,
+        "moveElemsAttrsToGroup": true,
+        "moveGroupAttrsToElems": true,
+        "collapseGroups": true,
+        "convertPathData": true,
+        "convertTransform": true,
+        "removeEmptyAttrs": true,
+        "removeEmptyContainers": true,
+        "mergePaths": true,
+        "removeUnusedNS": true,
+        "sortAttrs": true,
+        "removeTitle": false,
+        "removeDesc": true,
+        "removeDimensions": true,
+        "removeStyleElement": false,
+        "removeScriptElement": true
+    },
+    "original": false,
+    "gzip": false,
+    "pretty": true,
+    "floatPrecision": "1",
+    "fingerprint": "1,|1|,1,1,1,1,0,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,0,1,1,0,1"
+}
+const svgo = new SVGO({
+    full: true,
+    plugins: [
+        // {cleanupAttrs: true,},
+        {
+            removeDoctype: true,
+        }, {
+            removeXMLProcInst: true,
+        }, {
+            removeComments: true,
+        }, {
+            removeMetadata: true,
+        }, {
+            removeTitle: true,
+        }, {
+            removeDesc: true,
+        }, {
+            removeUselessDefs: true,
+        }, {
+            removeEditorsNSData: true,
+        }, {
+            removeEmptyAttrs: true,
+        }, {
+            removeHiddenElems: true,
+        }, {
+            removeEmptyText: true,
+        }, {
+            removeEmptyContainers: true,
+        }, {
+            removeViewBox: false,
+        }, {
+            cleanupEnableBackground: true,
+        },
+        {convertStyleToAttrs: false,},
+        {
+            convertColors: true,
+        }, {
+            convertPathData: true,
+        }, {
+            convertTransform: true,
+        }, {
+            removeUnknownsAndDefaults: true,
+        }, {
+            removeNonInheritableGroupAttrs: true,
+        }, {
+            removeUselessStrokeAndFill: true,
+        }, {
+            removeUnusedNS: true,
+        }, {
+            cleanupIDs: true,
+        }, {
+            cleanupNumericValues: true,
+        }, {
+            moveElemsAttrsToGroup: true,
+        }, {
+            moveGroupAttrsToElems: true,
+        }, {
+            collapseGroups: true,
+        }, {
+            removeRasterImages: false,
+        }, {
+            mergePaths: true,
+        }, {
+            convertShapeToPath: {convertArcs:true},
+        }, {
+            sortAttrs: true,
+        }, {
+            removeDimensions: true,
+        },
+        {removeStyleElement:false,},
+        /*{
+            removeAttrs: { attrs: '(stroke|fill)' },
+        }*/
+    ],
+    multipass: true,
+    floatPrecision: 1,
+    js2svg: { pretty: true, indent: 2, floatPrecision: 0 }
+});
+const createElement = text => {
+    const div = document.createElement('div');
+    div.innerHTML = text;
+    document.body.appendChild(div);
+}
+let init = false;
+const message = (a) => {
+    console.log('response', init, a.data)
+    if(a.data.result ==='done'){
+    	console.log('get')
+    	console.timeEnd('load')
+    	return
+    }
+    if (!init) {
+        init = true;
+        myWorker.postMessage({ action: "process", id: 2, settings })
+    } else {
+        console.timeEnd('test2');
+        createElement(a.data.result.data);
+    }
+}
+const callWorker = data => {
+    console.time('test2');
+    console.time('worker')
+    console.time('error')
+    console.time('load')
+    myWorker = new Worker('./lib/svgo-worker.js');
+    myWorker.onerror = event => {
+        console.log(event);
+        console.timeEnd('error')
+    };
+    console.timeEnd('worker')
+
+    const start = { action: 'load', data, id: 1 };
+    myWorker.onmessage = message;
+
+    myWorker.postMessage(start);
+    console.log('post')
+}
+const optim = (data, filepath = 'hello') => {
+    console.time('test');
+    svgo.optimize(data).then(function(result) {
+        console.timeEnd('test');
+        // console.log(result);
+        const div = document.createElement('div');
+        document.body.appendChild(div);
+        div.innerHTML = result.data
+        callWorker(data)
+    }).catch(e => {
+        console.log(e);
+    });
+}
+fetch('./src/doctor.svg').then(t => t.text()).then(optim)
+</script>
+
 </html>
